@@ -1,0 +1,760 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CivicDesk – Online Complaint Registration System</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css">
+<style>
+  :root {
+    --primary: #3C3489;
+    --primary-light: #EEEDFE;
+    --primary-mid: #7F77DD;
+    --primary-dark: #26215C;
+    --success: #3B6D11;
+    --success-light: #EAF3DE;
+    --warning: #854F0B;
+    --warning-light: #FAEEDA;
+    --danger: #A32D2D;
+    --danger-light: #FCEBEB;
+    --gray: #444441;
+    --gray-light: #F1EFE8;
+    --bg: #F5F5F7;
+    --surface: #ffffff;
+    --border: rgba(0,0,0,0.10);
+    --border-strong: rgba(0,0,0,0.18);
+    --text: #1a1a1a;
+    --text-muted: #6b6b6b;
+    --text-faint: #999;
+    --radius: 8px;
+    --radius-lg: 12px;
+    --radius-xl: 16px;
+    --shadow: 0 1px 4px rgba(0,0,0,0.08);
+    --shadow-md: 0 4px 16px rgba(0,0,0,0.10);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; font-size: 14px; line-height: 1.5; }
+
+  /* ── TOPBAR ── */
+  .topbar { background: var(--surface); border-bottom: 1px solid var(--border); height: 58px; display: flex; align-items: center; padding: 0 24px; position: sticky; top: 0; z-index: 200; gap: 16px; }
+  .logo { display: flex; align-items: center; gap: 10px; font-size: 17px; font-weight: 600; color: var(--primary-dark); text-decoration: none; }
+  .logo-box { width: 36px; height: 36px; background: var(--primary); border-radius: 10px; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 18px; }
+  .topbar-right { margin-left: auto; display: flex; align-items: center; gap: 10px; }
+  .user-chip { display: flex; align-items: center; gap: 8px; padding: 4px 12px 4px 6px; border-radius: 24px; background: var(--bg); border: 1px solid var(--border); font-size: 13px; color: var(--text-muted); }
+  .avatar { width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; }
+  .role-badge { font-size: 10px; padding: 2px 8px; border-radius: 20px; font-weight: 600; letter-spacing: .03em; text-transform: uppercase; }
+
+  /* ── LAYOUT ── */
+  .app-shell { display: flex; min-height: calc(100vh - 58px); }
+  .sidebar { width: 230px; background: var(--surface); border-right: 1px solid var(--border); padding: 16px 10px; flex-shrink: 0; display: flex; flex-direction: column; gap: 4px; }
+  .sidebar-label { font-size: 10px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--text-faint); padding: 8px 10px 4px; }
+  .nav-item { display: flex; align-items: center; gap: 10px; padding: 8px 10px; border-radius: var(--radius); cursor: pointer; font-size: 13.5px; color: var(--text-muted); border: none; background: transparent; width: 100%; text-align: left; transition: all .13s; }
+  .nav-item:hover { background: var(--bg); color: var(--text); }
+  .nav-item.active { background: var(--primary-light); color: var(--primary); font-weight: 600; }
+  .nav-item i { font-size: 17px; width: 20px; text-align: center; }
+  .nav-badge { margin-left: auto; font-size: 11px; font-weight: 600; padding: 1px 7px; border-radius: 12px; background: var(--primary-light); color: var(--primary); }
+  .main { flex: 1; padding: 28px 32px; overflow: auto; }
+
+  /* ── CARDS ── */
+  .card { background: var(--surface); border-radius: var(--radius-lg); border: 1px solid var(--border); padding: 20px 24px; margin-bottom: 16px; box-shadow: var(--shadow); }
+  .card-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+  .card-title { font-size: 14px; font-weight: 600; }
+  .page-header { margin-bottom: 24px; }
+  .page-header h1 { font-size: 22px; font-weight: 700; color: var(--primary-dark); margin-bottom: 4px; }
+  .page-header p { font-size: 13px; color: var(--text-muted); }
+
+  /* ── STATS ── */
+  .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 12px; margin-bottom: 20px; }
+  .stat-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 16px; box-shadow: var(--shadow); }
+  .stat-label { font-size: 11px; color: var(--text-faint); font-weight: 600; letter-spacing: .04em; text-transform: uppercase; margin-bottom: 6px; }
+  .stat-value { font-size: 26px; font-weight: 700; line-height: 1; }
+  .stat-sub { font-size: 11px; color: var(--text-faint); margin-top: 4px; }
+
+  /* ── BADGES ── */
+  .status-badge { font-size: 11px; padding: 3px 9px; border-radius: 20px; font-weight: 600; white-space: nowrap; display: inline-block; }
+  .s-open { background: var(--primary-light); color: var(--primary); }
+  .s-progress { background: var(--warning-light); color: var(--warning); }
+  .s-resolved { background: var(--success-light); color: var(--success); }
+  .s-closed { background: var(--gray-light); color: var(--gray); }
+  .p-high { color: var(--danger); font-size: 11px; font-weight: 700; }
+  .p-med { color: var(--warning); font-size: 11px; font-weight: 700; }
+  .p-low { color: var(--success); font-size: 11px; font-weight: 700; }
+  .tag { font-size: 11px; padding: 3px 9px; border-radius: 20px; background: var(--bg); color: var(--text-muted); border: 1px solid var(--border); display: inline-block; }
+
+  /* ── BUTTONS ── */
+  .btn { padding: 7px 16px; border-radius: var(--radius); font-size: 13px; cursor: pointer; border: 1px solid var(--border-strong); background: var(--surface); color: var(--text); font-family: inherit; font-weight: 500; transition: all .13s; display: inline-flex; align-items: center; gap: 6px; }
+  .btn:hover { background: var(--bg); }
+  .btn-primary { background: var(--primary); color: #fff; border-color: var(--primary); }
+  .btn-primary:hover { background: var(--primary-dark); border-color: var(--primary-dark); }
+  .btn-sm { padding: 4px 12px; font-size: 12px; }
+  .btn-danger { background: var(--danger-light); color: var(--danger); border-color: #F7C1C1; }
+  .btn-success { background: var(--success-light); color: var(--success); border-color: #C0DD97; }
+
+  /* ── FORMS ── */
+  .form-group { margin-bottom: 14px; }
+  .form-label { font-size: 12px; font-weight: 600; color: var(--text-muted); margin-bottom: 6px; display: block; text-transform: uppercase; letter-spacing: .03em; }
+  .form-input, .form-select, .form-textarea {
+    width: 100%; padding: 9px 12px; border: 1px solid var(--border-strong); border-radius: var(--radius);
+    font-size: 13.5px; background: var(--surface); color: var(--text); font-family: inherit; transition: border .13s;
+  }
+  .form-input:focus, .form-select:focus, .form-textarea:focus { outline: none; border-color: var(--primary-mid); box-shadow: 0 0 0 3px rgba(127,119,221,.15); }
+  .form-textarea { resize: vertical; min-height: 90px; }
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .three-col { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+
+  /* ── TABLE ── */
+  table { width: 100%; border-collapse: collapse; }
+  th { font-size: 11px; font-weight: 700; color: var(--text-faint); text-transform: uppercase; letter-spacing: .05em; padding: 10px 12px; text-align: left; border-bottom: 1px solid var(--border); background: var(--bg); }
+  td { padding: 11px 12px; border-bottom: 1px solid var(--border); font-size: 13px; vertical-align: middle; }
+  tr:last-child td { border-bottom: none; }
+  tr.clickable:hover td { background: #fafafa; cursor: pointer; }
+  .comp-id { font-family: 'SFMono-Regular', Consolas, monospace; font-size: 11px; color: var(--text-faint); }
+
+  /* ── TIMELINE ── */
+  .timeline { list-style: none; position: relative; padding: 0; }
+  .timeline::before { content:''; position: absolute; left: 14px; top: 0; bottom: 0; width: 2px; background: var(--border); }
+  .timeline-item { display: flex; gap: 14px; margin-bottom: 18px; position: relative; }
+  .t-dot { width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 13px; flex-shrink: 0; z-index: 1; }
+  .t-done { background: var(--success-light); color: var(--success); }
+  .t-active { background: var(--primary-light); color: var(--primary); }
+  .t-pending { background: var(--bg); color: var(--text-faint); border: 1px solid var(--border); }
+  .t-body { flex: 1; padding-top: 4px; }
+  .t-label { font-size: 13.5px; font-weight: 600; }
+  .t-time { font-size: 11px; color: var(--text-faint); margin-top: 2px; }
+
+  /* ── CHAT ── */
+  .chat-area { background: var(--bg); border-radius: var(--radius); padding: 14px; min-height: 140px; max-height: 240px; overflow-y: auto; margin-bottom: 10px; }
+  .chat-msg { margin-bottom: 12px; }
+  .chat-from { font-size: 11px; color: var(--text-faint); margin-bottom: 3px; }
+  .chat-bubble { display: inline-block; padding: 7px 11px; border-radius: var(--radius); font-size: 13px; max-width: 80%; line-height: 1.5; }
+  .chat-user-msg .chat-bubble { background: var(--primary-light); color: var(--primary-dark); }
+  .chat-agent-msg .chat-bubble { background: var(--surface); border: 1px solid var(--border); color: var(--text); }
+  .chat-user-msg { text-align: right; }
+
+  /* ── FILTERS ── */
+  .filter-row { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 14px; align-items: center; }
+  .chip { padding: 5px 14px; border-radius: 20px; font-size: 12px; cursor: pointer; border: 1px solid var(--border-strong); background: transparent; color: var(--text-muted); transition: all .12s; font-weight: 500; }
+  .chip.active { background: var(--primary-light); color: var(--primary); border-color: var(--primary-mid); }
+  .chip:hover:not(.active) { background: var(--bg); }
+  .search-bar { display: flex; align-items: center; gap: 8px; background: var(--surface); border: 1px solid var(--border-strong); border-radius: var(--radius); padding: 7px 12px; margin-bottom: 12px; }
+  .search-bar input { border: none; background: transparent; font-size: 13.5px; color: var(--text); flex: 1; font-family: inherit; }
+  .search-bar input:focus { outline: none; }
+  .search-bar i { color: var(--text-faint); font-size: 16px; }
+
+  /* ── MODAL ── */
+  .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.45); z-index: 500; align-items: center; justify-content: center; }
+  .modal-overlay.open { display: flex; }
+  .modal { background: var(--surface); border-radius: var(--radius-xl); border: 1px solid var(--border); width: 600px; max-width: 95vw; max-height: 90vh; overflow-y: auto; padding: 24px; box-shadow: var(--shadow-md); animation: slideUp .18s ease; }
+  @keyframes slideUp { from { transform: translateY(16px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+  .modal-header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 18px; }
+  .modal-title { font-size: 17px; font-weight: 700; }
+
+  /* ── TABS ── */
+  .tab-row { display: flex; gap: 2px; border-bottom: 1px solid var(--border); margin-bottom: 18px; }
+  .tab { padding: 8px 16px; font-size: 13px; cursor: pointer; border: none; background: transparent; color: var(--text-muted); border-bottom: 2px solid transparent; margin-bottom: -1px; transition: all .12s; font-family: inherit; font-weight: 500; }
+  .tab.active { color: var(--primary); border-bottom-color: var(--primary); font-weight: 700; }
+
+  /* ── PROGRESS ── */
+  .progress-bar { height: 6px; background: var(--bg); border-radius: 3px; overflow: hidden; margin-top: 6px; }
+  .progress-fill { height: 100%; border-radius: 3px; background: var(--primary); transition: width .4s; }
+
+  /* ── AGENT CARD ── */
+  .agent-row { display: flex; align-items: center; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--border); }
+  .agent-row:last-child { border-bottom: none; }
+  .agent-av { width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; flex-shrink: 0; }
+
+  /* ── RATING ── */
+  .stars { display: flex; gap: 6px; margin: 10px 0; }
+  .star { font-size: 26px; cursor: pointer; color: var(--border-strong); transition: color .1s; line-height: 1; }
+  .star.lit { color: #EF9F27; }
+
+  /* ── AI BOX ── */
+  .ai-box { background: var(--primary-light); border: 1px solid #AFA9EC; border-radius: var(--radius); padding: 12px 14px; margin-top: 10px; font-size: 13px; color: var(--primary-dark); }
+  .ai-label { font-size: 11px; font-weight: 700; color: var(--primary); margin-bottom: 6px; display: flex; align-items: center; gap: 5px; letter-spacing: .03em; }
+
+  /* ── SWITCH ── */
+  .switch-row { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+  .switch { width: 38px; height: 22px; border-radius: 11px; background: var(--border-strong); position: relative; cursor: pointer; transition: background .2s; flex-shrink: 0; }
+  .switch.on { background: var(--primary); }
+  .switch::after { content:''; width: 18px; height: 18px; border-radius: 50%; background: #fff; position: absolute; top: 2px; left: 2px; transition: left .2s; box-shadow: 0 1px 3px rgba(0,0,0,.2); }
+  .switch.on::after { left: 18px; }
+
+  /* ── UPLOAD ZONE ── */
+  .upload-zone { border: 2px dashed var(--border-strong); border-radius: var(--radius); padding: 24px; text-align: center; color: var(--text-faint); cursor: pointer; font-size: 13px; transition: border-color .15s; }
+  .upload-zone:hover { border-color: var(--primary-mid); background: var(--primary-light); }
+  .upload-zone i { font-size: 30px; display: block; margin-bottom: 8px; }
+
+  /* ── LOGIN ── */
+  .login-wrap { display: flex; align-items: center; justify-content: center; min-height: 100vh; background: linear-gradient(135deg, #f0eeff 0%, #e8f5ee 100%); }
+  .login-card { background: var(--surface); border-radius: var(--radius-xl); border: 1px solid var(--border); padding: 36px 32px; width: 420px; box-shadow: var(--shadow-md); }
+  .login-logo { display: flex; align-items: center; justify-content: center; gap: 12px; margin-bottom: 8px; }
+  .login-logo-icon { width: 52px; height: 52px; background: var(--primary); border-radius: 14px; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 26px; }
+  .login-logo-text { font-size: 26px; font-weight: 800; color: var(--primary-dark); }
+  .login-tagline { text-align: center; color: var(--text-muted); font-size: 13px; margin-bottom: 28px; }
+  .role-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 20px; }
+  .role-card { border: 1.5px solid var(--border-strong); border-radius: var(--radius); padding: 14px 8px; text-align: center; cursor: pointer; transition: all .15s; }
+  .role-card:hover { background: var(--bg); }
+  .role-card.selected { border-color: var(--primary-mid); background: var(--primary-light); }
+  .role-card i { font-size: 26px; margin-bottom: 6px; display: block; color: var(--text-muted); }
+  .role-card.selected i { color: var(--primary); }
+  .role-card-name { font-size: 12px; font-weight: 700; color: var(--text-muted); }
+  .role-card.selected .role-card-name { color: var(--primary); }
+  .divider { border: none; border-top: 1px solid var(--border); margin: 20px 0; }
+
+  /* ── EMPTY STATE ── */
+  .empty-state { text-align: center; padding: 40px 16px; color: var(--text-faint); }
+  .empty-state i { font-size: 48px; margin-bottom: 12px; display: block; }
+  .empty-state p { font-size: 14px; }
+
+  /* ── NOTIFICATION DOT ── */
+  .notif-dot { width: 8px; height: 8px; border-radius: 50%; background: #E24B4A; }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 768px) {
+    .sidebar { display: none; }
+    .main { padding: 16px; }
+    .two-col, .three-col { grid-template-columns: 1fr; }
+    .stats-grid { grid-template-columns: 1fr 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ════════════════════ LOGIN ════════════════════ -->
+<div id="login-page" class="login-wrap">
+  <div class="login-card">
+    <div class="login-logo">
+      <div class="login-logo-icon"><i class="ti ti-file-description"></i></div>
+      <div class="login-logo-text">CivicDesk</div>
+    </div>
+    <p class="login-tagline">Online Complaint Registration &amp; Management System</p>
+    <div class="form-group">
+      <label class="form-label">Sign in as</label>
+      <div class="role-grid">
+        <div class="role-card selected" id="r-user" onclick="setRole('user',this)"><i class="ti ti-user"></i><div class="role-card-name">Citizen</div></div>
+        <div class="role-card" id="r-agent" onclick="setRole('agent',this)"><i class="ti ti-headset"></i><div class="role-card-name">Agent</div></div>
+        <div class="role-card" id="r-admin" onclick="setRole('admin',this)"><i class="ti ti-shield-check"></i><div class="role-card-name">Admin</div></div>
+      </div>
+    </div>
+    <div class="form-group"><label class="form-label">Email address</label><input class="form-input" id="login-email" type="email" value="citizen@example.com"></div>
+    <div class="form-group"><label class="form-label">Password</label><input class="form-input" type="password" value="••••••••"></div>
+    <button class="btn btn-primary" style="width:100%;justify-content:center;padding:10px" onclick="doLogin()"><i class="ti ti-login"></i> Sign in</button>
+    <hr class="divider">
+    <p style="text-align:center;font-size:12px;color:var(--text-faint)">Demo mode — select a role above and click Sign in</p>
+  </div>
+</div>
+
+<!-- ════════════════════ MAIN APP ════════════════════ -->
+<div id="main-app" style="display:none">
+  <nav class="topbar">
+    <a class="logo" href="#"><div class="logo-box"><i class="ti ti-file-description"></i></div>CivicDesk</a>
+    <div class="topbar-right">
+      <div class="notif-dot"></div>
+      <i class="ti ti-bell" style="font-size:18px;color:var(--text-muted)"></i>
+      <div class="user-chip">
+        <div class="avatar" id="top-avatar"></div>
+        <span id="top-name" style="font-weight:600"></span>
+        <span class="role-badge" id="top-role-badge"></span>
+      </div>
+      <button class="btn btn-sm" onclick="doLogout()"><i class="ti ti-logout"></i> Sign out</button>
+    </div>
+  </nav>
+  <div class="app-shell">
+    <aside class="sidebar" id="sidebar"></aside>
+    <main class="main" id="main-content"></main>
+  </div>
+</div>
+
+<!-- ════════════════════ MODAL ════════════════════ -->
+<div class="modal-overlay" id="modal-overlay" onclick="if(event.target===this)closeModal()">
+  <div class="modal" id="modal-body"></div>
+</div>
+
+<script>
+/* ── DATA ── */
+const COMPLAINTS = [
+  {id:'CMP-001',title:'Water pipeline broken near Sector 4',cat:'Infrastructure',status:'progress',priority:'high',date:'2026-06-15',desc:'The main water pipeline near Sector 4 has been leaking for 3 days causing severe road damage and water wastage affecting over 200 households.',agent:'Rahul Sharma',agentId:'A1',userId:'U1',msgs:[{from:'user',name:'Priya M.',text:'The leak is getting worse, please escalate urgently.'},{from:'agent',name:'Rahul S.',text:'Our repair team is on-site. Work expected to complete by tomorrow morning.'}],feedback:null,files:['pipeline_photo.jpg','location_map.png']},
+  {id:'CMP-002',title:'Street lights not working on MG Road',cat:'Electricity',status:'open',priority:'high',date:'2026-06-18',desc:'Multiple street lights on MG Road have been non-functional for over a week causing safety concerns especially during night hours.',agent:null,agentId:null,userId:'U1',msgs:[],feedback:null,files:[]},
+  {id:'CMP-003',title:'Garbage not collected for 5 days',cat:'Sanitation',status:'resolved',priority:'med',date:'2026-06-10',desc:'Garbage collection has not happened in our locality for 5 consecutive days causing health hazards and unbearable odor.',agent:'Sneha Kapoor',agentId:'A2',userId:'U2',msgs:[{from:'agent',name:'Sneha K.',text:'Garbage collection has been resumed from today. Issue resolved.'},{from:'user',name:'Ramesh K.',text:'Confirmed, thank you for the prompt action!'}],feedback:{rating:4,comment:'Quick resolution time. Appreciate the follow-up call.'},files:[]},
+  {id:'CMP-004',title:'Large pothole on NH-28 near railway bridge',cat:'Roads',status:'open',priority:'high',date:'2026-06-19',desc:'A large and deep pothole on NH-28 near the railway overbridge has already caused two minor accidents this week and poses serious risk.',agent:null,agentId:null,userId:'U3',msgs:[],feedback:null,files:['pothole_photo.jpg','accident_report.pdf']},
+  {id:'CMP-005',title:'Illegal construction noise during night hours',cat:'Environment',status:'closed',priority:'low',date:'2026-06-05',desc:'Construction work happening illegally during night hours violating noise pollution guidelines, disturbing residents.',agent:'Rahul Sharma',agentId:'A1',userId:'U2',msgs:[{from:'agent',name:'Rahul S.',text:'Notice issued to the contractor. Nighttime work has been stopped. Case closed.'}],feedback:{rating:5,comment:'Excellent response! Issue resolved within 24 hours.'},files:[]},
+  {id:'CMP-006',title:'Stray dogs menace in children\'s park',cat:'Animal Control',status:'progress',priority:'med',date:'2026-06-17',desc:'A pack of stray dogs has been occupying the children\'s park causing fear among residents, especially children.',agent:'Sneha Kapoor',agentId:'A2',userId:'U1',msgs:[{from:'agent',name:'Sneha K.',text:'Animal control team has been deployed. A sterilization drive is scheduled for next week.'},{from:'user',name:'Priya M.',text:'Please hurry — my child was chased yesterday. This is becoming dangerous.'}],feedback:null,files:[]},
+];
+
+const AGENTS = [
+  {id:'A1',name:'Rahul Sharma',email:'rahul@civicdesk.gov',dept:'Infrastructure & Roads',active:2,resolved:38,rating:4.7,av:'RS',bg:'#EEEDFE',col:'#3C3489'},
+  {id:'A2',name:'Sneha Kapoor',email:'sneha@civicdesk.gov',dept:'Sanitation & Environment',active:2,resolved:51,rating:4.9,av:'SK',bg:'#EAF3DE',col:'#27500A'},
+  {id:'A3',name:'Vikram Das',email:'vikram@civicdesk.gov',dept:'Electricity & Utilities',active:1,resolved:22,rating:4.3,av:'VD',bg:'#FAEEDA',col:'#633806'},
+];
+
+const USERS = {
+  user:{name:'Priya Mehta',initials:'PM',email:'citizen@example.com',badgeLabel:'Citizen',badgeStyle:'background:#EEEDFE;color:#3C3489',
+    nav:[{id:'dashboard',icon:'ti-layout-dashboard',label:'Dashboard'},{id:'my-complaints',icon:'ti-file-text',label:'My Complaints',badge:2},{id:'new-complaint',icon:'ti-circle-plus',label:'File Complaint'},{id:'track',icon:'ti-radar',label:'Track Status'},{id:'feedback',icon:'ti-star',label:'Feedback'}]},
+  agent:{name:'Rahul Sharma',initials:'RS',email:'agent@civicdesk.gov',badgeLabel:'Agent',badgeStyle:'background:#EAF3DE;color:#27500A',
+    nav:[{id:'dashboard',icon:'ti-layout-dashboard',label:'Dashboard'},{id:'assigned',icon:'ti-clipboard-list',label:'Assigned Cases',badge:4},{id:'all-complaints',icon:'ti-file-description',label:'All Complaints'},{id:'resolved-cases',icon:'ti-circle-check',label:'Resolved'}]},
+  admin:{name:'Admin Kumar',initials:'AK',email:'admin@civicdesk.gov',badgeLabel:'Admin',badgeStyle:'background:#FCEBEB;color:#A32D2D',
+    nav:[{id:'dashboard',icon:'ti-layout-dashboard',label:'Dashboard'},{id:'all-complaints',icon:'ti-file-description',label:'All Complaints'},{id:'agents',icon:'ti-users',label:'Manage Agents'},{id:'analytics',icon:'ti-chart-bar',label:'Analytics'},{id:'settings',icon:'ti-settings',label:'Settings'}]},
+};
+
+let ROLE = 'user', VIEW = 'dashboard', complaints = JSON.parse(JSON.stringify(COMPLAINTS)), filterStatus = 'all';
+
+/* ── AUTH ── */
+function setRole(role, el) {
+  ROLE = role;
+  document.querySelectorAll('.role-card').forEach(c=>c.classList.remove('selected'));
+  el.classList.add('selected');
+  document.getElementById('login-email').value = USERS[role].email;
+}
+function doLogin() {
+  document.getElementById('login-page').style.display = 'none';
+  document.getElementById('main-app').style.display = 'block';
+  const u = USERS[ROLE];
+  document.getElementById('top-name').textContent = u.name;
+  document.getElementById('top-role-badge').textContent = u.badgeLabel;
+  document.getElementById('top-role-badge').style.cssText = u.badgeStyle + ';padding:2px 8px;border-radius:12px;font-size:10px;font-weight:700;text-transform:uppercase';
+  const av = document.getElementById('top-avatar');
+  av.textContent = u.initials;
+  av.style.cssText = 'width:28px;height:28px;background:var(--primary-light);color:var(--primary);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700';
+  VIEW = 'dashboard';
+  renderSidebar();
+  renderContent();
+}
+function doLogout() {
+  document.getElementById('main-app').style.display = 'none';
+  document.getElementById('login-page').style.display = 'flex';
+}
+
+/* ── NAV ── */
+function renderSidebar() {
+  const nav = USERS[ROLE].nav;
+  document.getElementById('sidebar').innerHTML = `<div class="sidebar-label">Menu</div>` +
+    nav.map(item=>`<button class="nav-item ${VIEW===item.id?'active':''}" onclick="navigate('${item.id}')">
+      <i class="ti ${item.icon}"></i>${item.label}
+      ${item.badge?`<span class="nav-badge">${item.badge}</span>`:''}
+    </button>`).join('');
+}
+function navigate(view) { VIEW = view; filterStatus = 'all'; renderSidebar(); renderContent(); }
+
+/* ── CONTENT ROUTER ── */
+function renderContent() {
+  const el = document.getElementById('main-content');
+  const pages = {
+    user:  {dashboard:pgUserDash, 'my-complaints':pgMyComplaints, 'new-complaint':pgNewComplaint, track:pgTrack, feedback:pgFeedback},
+    agent: {dashboard:pgAgentDash, assigned:pgAssigned, 'all-complaints':pgAllComplaints, 'resolved-cases':pgResolved},
+    admin: {dashboard:pgAdminDash, 'all-complaints':pgAllComplaints, agents:pgAgents, analytics:pgAnalytics, settings:pgSettings},
+  };
+  const fn = pages[ROLE]?.[VIEW];
+  el.innerHTML = fn ? fn() : `<div class="empty-state"><i class="ti ti-alert-circle"></i><p>Page not found.</p></div>`;
+  el.querySelectorAll('[data-cid]').forEach(r=>r.addEventListener('click',()=>openModal(r.dataset.cid)));
+}
+
+/* ══════════════ USER PAGES ══════════════ */
+function pgUserDash() {
+  const mine = complaints.filter(c=>c.userId==='U1');
+  const open=mine.filter(c=>c.status==='open').length, prog=mine.filter(c=>c.status==='progress').length, res=mine.filter(c=>['resolved','closed'].includes(c.status)).length;
+  return `<div class="page-header"><h1>Welcome back, Priya 👋</h1><p>Here's an overview of your complaint activity.</p></div>
+  <div class="stats-grid">
+    <div class="stat-card"><div class="stat-label">Total Filed</div><div class="stat-value" style="color:var(--primary)">${mine.length}</div><div class="stat-sub">all time</div></div>
+    <div class="stat-card"><div class="stat-label">Open</div><div class="stat-value" style="color:var(--danger)">${open}</div><div class="stat-sub">awaiting action</div></div>
+    <div class="stat-card"><div class="stat-label">In Progress</div><div class="stat-value" style="color:var(--warning)">${prog}</div><div class="stat-sub">being resolved</div></div>
+    <div class="stat-card"><div class="stat-label">Resolved</div><div class="stat-value" style="color:var(--success)">${res}</div><div class="stat-sub">completed</div></div>
+  </div>
+  <div class="card">
+    <div class="card-header"><div class="card-title"><i class="ti ti-file-text" style="color:var(--primary)"></i> Recent complaints</div><button class="btn btn-sm" onclick="navigate('my-complaints')">View all</button></div>
+    ${complaintsTable(mine.slice(0,4))}
+  </div>
+  <div class="card">
+    <div class="card-header"><div class="card-title"><i class="ti ti-bolt" style="color:var(--warning)"></i> Quick actions</div></div>
+    <div class="two-col">
+      <button class="btn" style="padding:18px;text-align:left;display:flex;align-items:center;gap:14px;border-radius:12px" onclick="navigate('new-complaint')"><div style="width:44px;height:44px;border-radius:10px;background:var(--primary-light);display:flex;align-items:center;justify-content:center;flex-shrink:0"><i class="ti ti-circle-plus" style="font-size:22px;color:var(--primary)"></i></div><div><div style="font-size:14px;font-weight:700">File a Complaint</div><div style="font-size:12px;color:var(--text-muted)">Report a new issue</div></div></button>
+      <button class="btn" style="padding:18px;text-align:left;display:flex;align-items:center;gap:14px;border-radius:12px" onclick="navigate('track')"><div style="width:44px;height:44px;border-radius:10px;background:var(--warning-light);display:flex;align-items:center;justify-content:center;flex-shrink:0"><i class="ti ti-radar" style="font-size:22px;color:var(--warning)"></i></div><div><div style="font-size:14px;font-weight:700">Track Status</div><div style="font-size:12px;color:var(--text-muted)">Real-time updates</div></div></button>
+    </div>
+  </div>`;
+}
+
+function pgMyComplaints() {
+  const mine = complaints.filter(c=>c.userId==='U1');
+  const visible = filterStatus==='all'?mine:mine.filter(c=>c.status===filterStatus);
+  return `<div class="page-header"><h1>My Complaints</h1><p>All complaints you have filed.</p></div>
+  <div class="filter-row">
+    ${['all','open','progress','resolved','closed'].map(f=>`<button class="chip ${filterStatus===f?'active':''}" onclick="applyFilter('${f}')">${f==='all'?'All':cap(f)}</button>`).join('')}
+    <button class="btn btn-primary btn-sm" style="margin-left:auto" onclick="navigate('new-complaint')"><i class="ti ti-plus"></i> New</button>
+  </div>
+  <div class="card" style="padding:0;overflow:hidden">
+    ${visible.length?complaintsTable(visible):`<div class="empty-state"><i class="ti ti-file-off"></i><p>No complaints in this category.</p></div>`}
+  </div>`;
+}
+
+function pgNewComplaint() {
+  return `<div class="page-header"><h1>File a Complaint</h1><p>Submit a new issue for official review and resolution.</p></div>
+  <div class="card">
+    <div class="form-group"><label class="form-label">Complaint Title *</label><input class="form-input" id="nc-title" placeholder="Brief, clear description of the issue"></div>
+    <div class="two-col">
+      <div class="form-group"><label class="form-label">Category</label><select class="form-select" id="nc-cat"><option>Infrastructure</option><option>Electricity</option><option>Sanitation</option><option>Roads</option><option>Environment</option><option>Animal Control</option><option>Water Supply</option><option>Public Health</option><option>Other</option></select></div>
+      <div class="form-group"><label class="form-label">Priority Level</label><select class="form-select" id="nc-pri"><option value="low">Low</option><option value="med" selected>Medium</option><option value="high">High</option></select></div>
+    </div>
+    <div class="form-group"><label class="form-label">Location / Address</label><input class="form-input" id="nc-loc" placeholder="Street, sector, landmark, PIN code..."></div>
+    <div class="form-group"><label class="form-label">Detailed Description *</label><textarea class="form-textarea" id="nc-desc" rows="5" placeholder="Describe the issue in detail — what happened, when it started, who is affected, and what has been tried so far..."></textarea></div>
+    <div class="form-group"><label class="form-label">Supporting Documents / Photos</label><div class="upload-zone"><i class="ti ti-cloud-upload"></i><strong>Drop files here or click to browse</strong><br><span style="font-size:12px">JPG, PNG, PDF up to 10 MB each</span></div></div>
+    <div id="ai-wrap">
+      <button class="btn" onclick="getAISuggestion()"><i class="ti ti-sparkles" style="color:var(--primary)"></i> Get AI routing suggestion</button>
+      <div id="ai-out"></div>
+    </div>
+    <hr style="border:none;border-top:1px solid var(--border);margin:18px 0">
+    <div style="display:flex;justify-content:flex-end;gap:10px">
+      <button class="btn" onclick="navigate('my-complaints')">Cancel</button>
+      <button class="btn btn-primary" onclick="submitComplaint()"><i class="ti ti-send"></i> Submit Complaint</button>
+    </div>
+  </div>`;
+}
+
+function pgTrack() {
+  const active = complaints.filter(c=>c.userId==='U1'&&['open','progress'].includes(c.status));
+  if(!active.length) return `<div class="page-header"><h1>Track Status</h1></div><div class="card"><div class="empty-state"><i class="ti ti-circle-check" style="color:var(--success)"></i><p>All your complaints have been resolved!</p></div></div>`;
+  return `<div class="page-header"><h1>Track Complaint Status</h1><p>Live progress of your active complaints.</p></div>` + active.map(c=>{
+    const steps = [
+      {label:'Complaint submitted',time:c.date,done:true},
+      {label:'Under review by system',time:'Auto-triaged',done:true},
+      {label:c.agent?`Assigned to ${c.agent}`:'Awaiting agent assignment',time:c.agent?'In progress':'In queue',done:!!c.agent,cur:!c.agent},
+      {label:'Resolved & closed',time:'Pending',done:false,cur:false},
+    ];
+    if(c.agent) { steps[2].done=true; steps[2].cur=false; steps[3].cur=true; }
+    const pct = c.status==='open'?20:60;
+    return `<div class="card">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px">
+        <div><div class="comp-id">${c.id}</div><div style="font-size:16px;font-weight:700;margin-top:4px">${c.title}</div></div>
+        <span class="status-badge s-${c.status}">${statusLabel(c.status)}</span>
+      </div>
+      <ul class="timeline">${steps.map(s=>`<li class="timeline-item">
+        <div class="t-dot ${s.done?'t-done':s.cur?'t-active':'t-pending'}"><i class="ti ${s.done?'ti-check':s.cur?'ti-loader':'ti-circle'}"></i></div>
+        <div class="t-body"><div class="t-label" style="${!s.done&&!s.cur?'color:var(--text-faint)':''}"> ${s.label}</div><div class="t-time">${s.time}</div></div>
+      </li>`).join('')}</ul>
+      <div style="margin-top:16px;font-size:12px;color:var(--text-muted);display:flex;justify-content:space-between"><span>Resolution progress</span><span>${pct}%</span></div>
+      <div class="progress-bar"><div class="progress-fill" style="width:${pct}%"></div></div>
+    </div>`;
+  }).join('');
+}
+
+function pgFeedback() {
+  const toRate = complaints.filter(c=>['resolved','closed'].includes(c.status)&&['U1','U2'].includes(c.userId)&&!c.feedback);
+  const rated = complaints.filter(c=>c.feedback&&['U1','U2'].includes(c.userId));
+  return `<div class="page-header"><h1>Feedback</h1><p>Rate resolved complaints to help us improve.</p></div>
+  ${toRate.length ? toRate.map(c=>`<div class="card" id="fb-${c.id}">
+    <div class="comp-id">${c.id}</div>
+    <div style="font-size:15px;font-weight:700;margin:6px 0">${c.title}</div>
+    <div style="font-size:13px;color:var(--text-muted);margin-bottom:10px">Rate your experience with agent <strong>${c.agent}</strong></div>
+    <div class="stars" id="stars-${c.id}">${[1,2,3,4,5].map(n=>`<span class="star" data-cid="${c.id}" data-n="${n}" onclick="setStar('${c.id}',${n})">★</span>`).join('')}</div>
+    <textarea class="form-textarea" id="comment-${c.id}" placeholder="Tell us about your experience..." style="min-height:70px"></textarea>
+    <div style="display:flex;justify-content:flex-end;margin-top:12px"><button class="btn btn-primary btn-sm" onclick="submitFeedback('${c.id}')"><i class="ti ti-send"></i> Submit</button></div>
+  </div>`).join('') : '<div class="card"><div class="empty-state"><i class="ti ti-star-off"></i><p>No pending feedback.</p></div></div>'}
+  ${rated.length?`<div class="card"><div class="card-header"><div class="card-title">Submitted feedback</div></div>${rated.map(c=>`
+    <div style="padding:12px 0;border-bottom:1px solid var(--border)">
+      <div style="display:flex;align-items:center;justify-content:space-between"><div style="font-size:13.5px;font-weight:600">${c.title}</div><div style="color:#EF9F27;font-size:16px">${'★'.repeat(c.feedback.rating)}${'☆'.repeat(5-c.feedback.rating)}</div></div>
+      <div style="font-size:13px;color:var(--text-muted);margin-top:4px">${c.feedback.comment}</div>
+    </div>`).join('')}</div>`:''}`;
+}
+
+/* ══════════════ AGENT PAGES ══════════════ */
+function pgAgentDash() {
+  const assigned = complaints.filter(c=>c.agentId==='A1'&&c.status==='progress');
+  const res = complaints.filter(c=>c.agentId==='A1'&&['resolved','closed'].includes(c.status));
+  return `<div class="page-header"><h1>Agent Dashboard</h1><p>Your active caseload and performance overview.</p></div>
+  <div class="stats-grid">
+    <div class="stat-card"><div class="stat-label">Active Cases</div><div class="stat-value" style="color:var(--warning)">${assigned.length}</div></div>
+    <div class="stat-card"><div class="stat-label">Total Resolved</div><div class="stat-value" style="color:var(--success)">38</div></div>
+    <div class="stat-card"><div class="stat-label">Avg Rating</div><div class="stat-value" style="color:#854F0B">4.7 ★</div></div>
+    <div class="stat-card"><div class="stat-label">Avg Resolution</div><div class="stat-value">2.3d</div></div>
+  </div>
+  <div class="card"><div class="card-header"><div class="card-title"><i class="ti ti-clipboard-list" style="color:var(--warning)"></i> Active complaints</div><span class="status-badge s-progress">${assigned.length} active</span></div>${complaintsTable(assigned)}</div>
+  <div class="card"><div class="card-header"><div class="card-title"><i class="ti ti-circle-check" style="color:var(--success)"></i> Recently resolved</div></div>${complaintsTable(res)}</div>`;
+}
+
+function pgAssigned() {
+  const all = complaints.filter(c=>c.agentId==='A1');
+  const visible = filterStatus==='all'?all:all.filter(c=>c.status===filterStatus);
+  return `<div class="page-header"><h1>Assigned Cases</h1><p>All complaints assigned to you.</p></div>
+  <div class="filter-row">${['all','open','progress','resolved','closed'].map(f=>`<button class="chip ${filterStatus===f?'active':''}" onclick="applyFilter('${f}')">${f==='all'?'All':cap(f)}</button>`).join('')}</div>
+  <div class="card" style="padding:0;overflow:hidden">${visible.length?complaintsTable(visible):`<div class="empty-state"><i class="ti ti-clipboard-off"></i><p>No cases in this category.</p></div>`}</div>`;
+}
+
+function pgResolved() {
+  const res = complaints.filter(c=>c.agentId==='A1'&&['resolved','closed'].includes(c.status));
+  return `<div class="page-header"><h1>Resolved Cases</h1><p>Complaints you've successfully closed.</p></div>
+  <div class="card" style="padding:0;overflow:hidden">${res.length?complaintsTable(res):`<div class="empty-state"><i class="ti ti-circle-check"></i><p>No resolved cases yet.</p></div>`}</div>`;
+}
+
+/* ══════════════ ADMIN PAGES ══════════════ */
+function pgAdminDash() {
+  const total=complaints.length,open=complaints.filter(c=>c.status==='open').length,prog=complaints.filter(c=>c.status==='progress').length,res=complaints.filter(c=>['resolved','closed'].includes(c.status)).length;
+  const unassigned = complaints.filter(c=>!c.agentId);
+  return `<div class="page-header"><h1>Admin Dashboard</h1><p>System-wide overview and management.</p></div>
+  <div class="stats-grid">
+    <div class="stat-card"><div class="stat-label">Total Complaints</div><div class="stat-value">${total}</div></div>
+    <div class="stat-card"><div class="stat-label">Open</div><div class="stat-value" style="color:var(--danger)">${open}</div></div>
+    <div class="stat-card"><div class="stat-label">In Progress</div><div class="stat-value" style="color:var(--warning)">${prog}</div></div>
+    <div class="stat-card"><div class="stat-label">Resolved</div><div class="stat-value" style="color:var(--success)">${res}</div></div>
+    <div class="stat-card"><div class="stat-label">Resolution Rate</div><div class="stat-value">${Math.round(res/total*100)}%</div></div>
+    <div class="stat-card"><div class="stat-label">Active Agents</div><div class="stat-value">${AGENTS.length}</div></div>
+  </div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+    <div class="card"><div class="card-header"><div class="card-title"><i class="ti ti-alert-triangle" style="color:var(--danger)"></i> Unassigned complaints</div><span style="font-size:12px;color:var(--danger);font-weight:700">${unassigned.length} pending</span></div>${unassigned.length?complaintsTable(unassigned,true):`<div class="empty-state" style="padding:20px"><i class="ti ti-circle-check"></i><p>All assigned!</p></div>`}</div>
+    <div class="card"><div class="card-header"><div class="card-title"><i class="ti ti-users" style="color:var(--primary)"></i> Agent overview</div></div>${AGENTS.map(a=>`<div class="agent-row"><div class="agent-av" style="background:${a.bg};color:${a.col}">${a.av}</div><div style="flex:1"><div style="font-size:13.5px;font-weight:600">${a.name}</div><div style="font-size:11px;color:var(--text-faint)">${a.dept}</div></div><div style="text-align:right"><div style="font-size:13px;font-weight:700;color:var(--warning)">${a.active} active</div><div style="font-size:11px;color:var(--text-faint)">★ ${a.rating}</div></div></div>`).join('')}</div>
+  </div>
+  <div class="card"><div class="card-header"><div class="card-title">Recent complaints</div><button class="btn btn-sm" onclick="navigate('all-complaints')">View all</button></div>${complaintsTable(complaints.slice(0,4),true)}</div>`;
+}
+
+function pgAllComplaints() {
+  const visible = filterStatus==='all'?complaints:complaints.filter(c=>c.status===filterStatus);
+  return `<div class="page-header"><h1>All Complaints</h1><p>System-wide complaint registry.</p></div>
+  <div class="search-bar"><i class="ti ti-search"></i><input placeholder="Search by ID, title, category, agent..." id="search-inp" oninput="doSearch(this.value)"></div>
+  <div class="filter-row">${['all','open','progress','resolved','closed'].map(f=>`<button class="chip ${filterStatus===f?'active':''}" onclick="applyFilter('${f}')">${f==='all'?'All':cap(f)}</button>`).join('')}</div>
+  <div class="card" style="padding:0;overflow:hidden" id="comp-list">${complaintsTable(visible, ROLE==='admin')}</div>`;
+}
+
+function pgAgents() {
+  return `<div class="page-header"><h1>Manage Agents</h1><p>Agent performance and complaint assignment.</p></div>
+  <div style="display:flex;justify-content:flex-end;margin-bottom:16px"><button class="btn btn-primary btn-sm"><i class="ti ti-user-plus"></i> Add agent</button></div>
+  ${AGENTS.map(a=>`<div class="card">
+    <div style="display:flex;align-items:center;gap:14px;margin-bottom:16px">
+      <div class="agent-av" style="width:52px;height:52px;font-size:16px;background:${a.bg};color:${a.col}">${a.av}</div>
+      <div style="flex:1"><div style="font-size:16px;font-weight:700">${a.name}</div><div style="font-size:12px;color:var(--text-muted)">${a.email} · ${a.dept}</div></div>
+      <button class="btn btn-sm" onclick="openAssignModal('${a.id}')"><i class="ti ti-clipboard-list"></i> Assign</button>
+      <button class="btn btn-danger btn-sm"><i class="ti ti-user-off"></i> Deactivate</button>
+    </div>
+    <div class="stats-grid" style="grid-template-columns:repeat(4,1fr)">
+      <div class="stat-card"><div class="stat-label">Active</div><div class="stat-value" style="font-size:20px;color:var(--warning)">${a.active}</div></div>
+      <div class="stat-card"><div class="stat-label">Resolved</div><div class="stat-value" style="font-size:20px;color:var(--success)">${a.resolved}</div></div>
+      <div class="stat-card"><div class="stat-label">Rating</div><div class="stat-value" style="font-size:20px;color:#854F0B">★${a.rating}</div></div>
+      <div class="stat-card"><div class="stat-label">Efficiency</div><div class="stat-value" style="font-size:20px">${Math.round(a.resolved/(a.resolved+a.active)*100)}%</div></div>
+    </div>
+    <div style="margin-top:12px"><div style="font-size:12px;color:var(--text-muted);margin-bottom:4px;font-weight:600">CURRENT WORKLOAD</div><div class="progress-bar" style="height:8px"><div class="progress-fill" style="width:${Math.min(100,a.active*25)}%"></div></div></div>
+  </div>`).join('')}`;
+}
+
+function pgAnalytics() {
+  const catCount={};complaints.forEach(c=>{catCount[c.cat]=(catCount[c.cat]||0)+1});
+  const cats=Object.entries(catCount).sort((a,b)=>b[1]-a[1]);const mx=cats[0][1];
+  const statuses=[{l:'Open',n:complaints.filter(c=>c.status==='open').length,col:'var(--danger)'},{l:'In Progress',n:complaints.filter(c=>c.status==='progress').length,col:'var(--warning)'},{l:'Resolved',n:complaints.filter(c=>c.status==='resolved').length,col:'var(--success)'},{l:'Closed',n:complaints.filter(c=>c.status==='closed').length,col:'var(--gray)'}];
+  return `<div class="page-header"><h1>Analytics</h1><p>System performance insights and trends.</p></div>
+  <div class="stats-grid">
+    <div class="stat-card"><div class="stat-label">Filed This Month</div><div class="stat-value">6</div></div>
+    <div class="stat-card"><div class="stat-label">Avg Resolution Time</div><div class="stat-value">2.8d</div></div>
+    <div class="stat-card"><div class="stat-label">User Satisfaction</div><div class="stat-value" style="color:#854F0B">4.8 ★</div></div>
+    <div class="stat-card"><div class="stat-label">Escalation Rate</div><div class="stat-value">8%</div></div>
+  </div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+    <div class="card"><div class="card-header"><div class="card-title">Complaints by category</div></div>${cats.map(([cat,n])=>`<div style="margin-bottom:12px"><div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:5px"><span style="font-weight:500">${cat}</span><span style="color:var(--text-muted)">${n}</span></div><div class="progress-bar" style="height:7px"><div class="progress-fill" style="width:${Math.round(n/mx*100)}%"></div></div></div>`).join('')}</div>
+    <div class="card"><div class="card-header"><div class="card-title">Status distribution</div></div>${statuses.map(s=>`<div style="display:flex;align-items:center;gap:12px;margin-bottom:14px"><div style="width:12px;height:12px;border-radius:50%;background:${s.col};flex-shrink:0"></div><div style="flex:1;font-size:13.5px">${s.l}</div><div style="font-size:14px;font-weight:700">${s.n}</div><div style="font-size:12px;color:var(--text-muted)">${Math.round(s.n/complaints.length*100)}%</div></div>`).join('')}</div>
+  </div>
+  <div class="card"><div class="card-header"><div class="card-title">Agent performance</div></div>
+    <table><thead><tr><th>Agent</th><th>Department</th><th>Active</th><th>Resolved</th><th>Rating</th><th>Efficiency</th></tr></thead>
+    <tbody>${AGENTS.map(a=>`<tr><td><div style="display:flex;align-items:center;gap:8px"><div class="agent-av" style="width:30px;height:30px;font-size:11px;background:${a.bg};color:${a.col}">${a.av}</div><span style="font-weight:600">${a.name}</span></div></td><td style="color:var(--text-muted)">${a.dept}</td><td style="color:var(--warning);font-weight:700">${a.active}</td><td style="color:var(--success);font-weight:700">${a.resolved}</td><td style="color:#854F0B;font-weight:700">★ ${a.rating}</td><td><div style="display:flex;align-items:center;gap:8px"><div class="progress-bar" style="width:70px;height:5px"><div class="progress-fill" style="width:${Math.round(a.resolved/(a.resolved+a.active)*100)}%"></div></div><span>${Math.round(a.resolved/(a.resolved+a.active)*100)}%</span></div></td></tr>`).join('')}</tbody></table>
+  </div>`;
+}
+
+function pgSettings() {
+  const notifs=[{l:'Email notifications for new complaints',on:true},{l:'SMS alerts for high-priority issues',on:true},{l:'Daily digest report email',on:false},{l:'Auto-escalation after 72 hours',on:true},{l:'Performance reports to admin',on:false}];
+  return `<div class="page-header"><h1>Settings</h1><p>System configuration and preferences.</p></div>
+  <div class="card"><div class="card-title" style="margin-bottom:16px">Notification preferences</div>
+    ${notifs.map((s,i)=>`<div class="switch-row"><div class="switch ${s.on?'on':''}" id="sw-${i}" onclick="toggleSwitch('sw-${i}')"></div><span style="font-size:13.5px">${s.l}</span></div>`).join('')}
+  </div>
+  <div class="card"><div class="card-title" style="margin-bottom:16px">Auto-assignment rules</div>
+    ${[['Infrastructure & Roads','Rahul Sharma'],['Sanitation & Environment','Sneha Kapoor'],['Electricity & Utilities','Vikram Das'],['Animal Control','Sneha Kapoor']].map(([dept,def])=>`<div class="form-group"><label class="form-label">${dept}</label><select class="form-select"><option selected>${def}</option>${AGENTS.filter(a=>a.name!==def).map(a=>`<option>${a.name}</option>`).join('')}</select></div>`).join('')}
+    <button class="btn btn-primary btn-sm"><i class="ti ti-device-floppy"></i> Save rules</button>
+  </div>
+  <div class="card"><div class="card-title" style="margin-bottom:16px">System settings</div>
+    <div class="two-col">
+      <div class="form-group"><label class="form-label">Auto-close after (days)</label><input class="form-input" value="7" type="number" style="width:100px"></div>
+      <div class="form-group"><label class="form-label">Max cases per agent</label><input class="form-input" value="10" type="number" style="width:100px"></div>
+    </div>
+    <button class="btn btn-primary btn-sm"><i class="ti ti-device-floppy"></i> Save settings</button>
+  </div>`;
+}
+
+/* ══════════════ SHARED ══════════════ */
+function complaintsTable(list, showAssign) {
+  if(!list.length) return `<div class="empty-state"><i class="ti ti-file-off"></i><p>No complaints to show.</p></div>`;
+  return `<table><thead><tr><th>ID</th><th>Title</th><th>Category</th><th>Priority</th><th>Status</th><th>Date</th>${showAssign?'<th>Action</th>':''}</tr></thead><tbody>
+  ${list.map(c=>`<tr class="clickable" data-cid="${c.id}">
+    <td class="comp-id">${c.id}</td>
+    <td style="font-weight:600;max-width:220px"><div style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${c.title}</div>${c.agent?`<div style="font-size:11px;color:var(--text-faint)">Agent: ${c.agent}</div>`:''}</td>
+    <td><span class="tag">${c.cat}</span></td>
+    <td><span class="p-${c.priority}">${c.priority.toUpperCase()}</span></td>
+    <td><span class="status-badge s-${c.status}">${statusLabel(c.status)}</span></td>
+    <td style="color:var(--text-muted)">${c.date}</td>
+    ${showAssign?`<td>${!c.agentId?`<button class="btn btn-sm btn-primary" onclick="event.stopPropagation();openQuickAssign('${c.id}')"><i class="ti ti-user-plus"></i> Assign</button>`:`<span style="font-size:12px;color:var(--success)"><i class="ti ti-check"></i> ${c.agent}</span>`}</td>`:''}
+  </tr>`).join('')}</tbody></table>`;
+}
+
+/* ══════════════ MODAL ══════════════ */
+function openModal(id) {
+  const c = complaints.find(x=>x.id===id);
+  if(!c) return;
+  const isAdmin=ROLE==='admin', isAgent=ROLE==='agent', canChat=ROLE==='user'||(isAgent&&c.agentId==='A1');
+  document.getElementById('modal-body').innerHTML = `
+  <div class="modal-header">
+    <div><div class="comp-id">${c.id}</div><div class="modal-title" style="margin-top:4px">${c.title}</div></div>
+    <button class="btn btn-sm" onclick="closeModal()"><i class="ti ti-x"></i></button>
+  </div>
+  <div class="tab-row">
+    <button class="tab active" onclick="switchTab(this,'m-detail')"><i class="ti ti-file-description"></i> Details</button>
+    <button class="tab" onclick="switchTab(this,'m-chat')"><i class="ti ti-message-circle"></i> Messages ${c.msgs.length?`<span class="nav-badge">${c.msgs.length}</span>`:''}</button>
+    ${isAdmin||isAgent?`<button class="tab" onclick="switchTab(this,'m-manage')"><i class="ti ti-settings"></i> Manage</button>`:''}
+  </div>
+  <div id="m-detail">
+    <div class="two-col" style="margin-bottom:14px">
+      <div><div class="form-label">Status</div><span class="status-badge s-${c.status}">${statusLabel(c.status)}</span></div>
+      <div><div class="form-label">Priority</div><span class="p-${c.priority}" style="font-size:14px">${c.priority.toUpperCase()}</span></div>
+    </div>
+    <div class="three-col" style="margin-bottom:14px">
+      <div><div class="form-label">Category</div><span class="tag">${c.cat}</span></div>
+      <div><div class="form-label">Filed on</div><span style="font-size:13px">${c.date}</span></div>
+      <div><div class="form-label">Agent</div><span style="font-size:13px">${c.agent||'—'}</span></div>
+    </div>
+    <div class="form-group"><div class="form-label">Description</div><p style="font-size:13.5px;line-height:1.7;color:var(--text-muted)">${c.desc}</p></div>
+    ${c.files.length?`<div class="form-group"><div class="form-label">Attachments</div><div style="display:flex;gap:8px;flex-wrap:wrap">${c.files.map(f=>`<span class="tag"><i class="ti ti-file"></i> ${f}</span>`).join('')}</div></div>`:''}
+    ${c.feedback?`<div style="background:var(--bg);border-radius:var(--radius);padding:14px;margin-top:14px"><div class="form-label">User Feedback</div><div style="color:#EF9F27;font-size:18px">${'★'.repeat(c.feedback.rating)}${'☆'.repeat(5-c.feedback.rating)}</div><div style="font-size:13px;color:var(--text-muted);margin-top:6px">"${c.feedback.comment}"</div></div>`:''}
+  </div>
+  <div id="m-chat" style="display:none">
+    <div class="chat-area" id="chat-log">${c.msgs.length?c.msgs.map(m=>`<div class="chat-msg chat-${m.from}-msg"><div class="chat-from">${m.name}</div><div class="chat-bubble">${m.text}</div></div>`).join(''):`<div style="text-align:center;padding:30px;color:var(--text-faint);font-size:13px">No messages yet. Start the conversation.</div>`}</div>
+    ${canChat?`<div style="display:flex;gap:8px"><input class="form-input" id="chat-inp" placeholder="Type a message..." style="flex:1" onkeydown="if(event.key==='Enter')sendMsg('${c.id}')"><button class="btn btn-primary" onclick="sendMsg('${c.id}')"><i class="ti ti-send"></i></button></div>`:''}
+  </div>
+  ${isAdmin||isAgent?`<div id="m-manage" style="display:none">
+    <div class="form-group"><label class="form-label">Update status</label><select class="form-select" id="status-sel"><option value="open" ${c.status==='open'?'selected':''}>Open</option><option value="progress" ${c.status==='progress'?'selected':''}>In Progress</option><option value="resolved" ${c.status==='resolved'?'selected':''}>Resolved</option><option value="closed" ${c.status==='closed'?'selected':''}>Closed</option></select></div>
+    ${isAdmin?`<div class="form-group"><label class="form-label">Assign agent</label><select class="form-select" id="agent-sel"><option value="">— Unassigned —</option>${AGENTS.map(a=>`<option value="${a.id}" ${c.agentId===a.id?'selected':''}>${a.name} (${a.active} active · ★${a.rating})</option>`).join('')}</select></div>`:''}
+    <div class="form-group"><label class="form-label">Resolution note</label><textarea class="form-textarea" id="res-note" placeholder="Add a resolution note, update, or internal comment..." style="min-height:80px"></textarea></div>
+    <div style="display:flex;gap:10px;justify-content:flex-end">
+      <button class="btn btn-success btn-sm" onclick="markResolved('${c.id}')"><i class="ti ti-circle-check"></i> Mark resolved</button>
+      <button class="btn btn-primary btn-sm" onclick="updateComplaint('${c.id}')"><i class="ti ti-device-floppy"></i> Save changes</button>
+    </div>
+  </div>`:''}`;
+  document.getElementById('modal-overlay').classList.add('open');
+}
+
+function closeModal() { document.getElementById('modal-overlay').classList.remove('open'); }
+
+function switchTab(btn, id) {
+  btn.parentElement.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  btn.classList.add('active');
+  ['m-detail','m-chat','m-manage'].forEach(tid=>{const el=document.getElementById(tid);if(el)el.style.display=tid===id?'block':'none';});
+}
+
+function sendMsg(id) {
+  const inp = document.getElementById('chat-inp');
+  const text = (inp?.value||'').trim();
+  if(!text) return;
+  const c = complaints.find(x=>x.id===id);
+  c.msgs.push({from:ROLE==='user'?'user':'agent',name:USERS[ROLE].name,text});
+  inp.value='';
+  const log = document.getElementById('chat-log');
+  log.innerHTML += `<div class="chat-msg chat-${ROLE==='user'?'user':'agent'}-msg"><div class="chat-from">${USERS[ROLE].name}</div><div class="chat-bubble">${text}</div></div>`;
+  log.scrollTop = log.scrollHeight;
+}
+
+function updateComplaint(id) {
+  const c = complaints.find(x=>x.id===id);
+  const ssel = document.getElementById('status-sel');
+  const asel = document.getElementById('agent-sel');
+  if(ssel) c.status = ssel.value;
+  if(asel && asel.value) { c.agentId=asel.value; c.agent=AGENTS.find(a=>a.id===asel.value)?.name; }
+  closeModal(); renderContent();
+}
+
+function markResolved(id) {
+  const c = complaints.find(x=>x.id===id);
+  c.status = 'resolved';
+  closeModal(); renderContent();
+}
+
+/* ══════════════ ASSIGN ══════════════ */
+function openAssignModal(agentId) {
+  const unassigned = complaints.filter(c=>!c.agentId);
+  const agName = AGENTS.find(a=>a.id===agentId)?.name;
+  document.getElementById('modal-body').innerHTML = `
+  <div class="modal-header"><div class="modal-title">Assign complaints to ${agName}</div><button class="btn btn-sm" onclick="closeModal()"><i class="ti ti-x"></i></button></div>
+  <p style="font-size:13px;color:var(--text-muted);margin-bottom:16px">Select unassigned complaints to assign:</p>
+  ${unassigned.length?unassigned.map(c=>`<div style="display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--border)"><input type="checkbox" id="ch-${c.id}" style="width:16px;height:16px;cursor:pointer"><label for="ch-${c.id}" style="flex:1;cursor:pointer"><div style="font-size:13.5px;font-weight:600">${c.title}</div><div style="font-size:11px;color:var(--text-faint)">${c.cat} · ${c.priority.toUpperCase()} · ${c.date}</div></label></div>`).join(''):`<div class="empty-state" style="padding:20px"><i class="ti ti-circle-check"></i><p>All complaints are assigned.</p></div>`}
+  <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:18px"><button class="btn btn-sm" onclick="closeModal()">Cancel</button><button class="btn btn-primary btn-sm" onclick="doAssign('${agentId}')"><i class="ti ti-circle-check"></i> Assign selected</button></div>`;
+  document.getElementById('modal-overlay').classList.add('open');
+}
+
+function openQuickAssign(cid) {
+  document.getElementById('modal-body').innerHTML = `
+  <div class="modal-header"><div class="modal-title">Assign agent to complaint</div><button class="btn btn-sm" onclick="closeModal()"><i class="ti ti-x"></i></button></div>
+  <p style="font-size:13px;color:var(--text-muted);margin-bottom:14px">Choose an agent to handle this complaint:</p>
+  ${AGENTS.map(a=>`<div class="agent-row" style="cursor:pointer;padding:12px;border-radius:var(--radius);margin-bottom:4px;transition:background .1s" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=''" onclick="quickAssign('${cid}','${a.id}')">
+    <div class="agent-av" style="background:${a.bg};color:${a.col}">${a.av}</div>
+    <div style="flex:1"><div style="font-size:14px;font-weight:600">${a.name}</div><div style="font-size:12px;color:var(--text-muted)">${a.dept}</div></div>
+    <div style="text-align:right"><div style="font-size:13px;font-weight:600;color:var(--warning)">${a.active} active</div><div style="font-size:12px;color:var(--text-faint)">★ ${a.rating}</div></div>
+    <i class="ti ti-arrow-right" style="color:var(--text-faint);font-size:18px"></i>
+  </div>`).join('')}`;
+  document.getElementById('modal-overlay').classList.add('open');
+}
+
+function quickAssign(cid, agentId) {
+  const c=complaints.find(x=>x.id===cid), ag=AGENTS.find(a=>a.id===agentId);
+  c.agentId=agentId; c.agent=ag.name; c.status='progress';
+  closeModal(); renderContent();
+}
+
+function doAssign(agentId) {
+  const ag=AGENTS.find(a=>a.id===agentId);
+  complaints.forEach(c=>{ const ch=document.getElementById('ch-'+c.id); if(ch?.checked&&!c.agentId){c.agentId=agentId;c.agent=ag.name;c.status='progress';} });
+  closeModal(); renderContent();
+}
+
+/* ══════════════ FEEDBACK ══════════════ */
+function setStar(cid, n) {
+  document.getElementById('stars-'+cid).setAttribute('data-rating',n);
+  document.querySelectorAll(`[data-cid="${cid}"]`).forEach(s=>s.classList.toggle('lit',+s.dataset.n<=n));
+}
+function submitFeedback(cid) {
+  const rating=+(document.getElementById('stars-'+cid).getAttribute('data-rating')||0);
+  if(!rating){alert('Please select a star rating.');return;}
+  const comment=document.getElementById('comment-'+cid).value||'No comment provided.';
+  complaints.find(x=>x.id===cid).feedback={rating,comment};
+  renderContent();
+}
+
+/* ══════════════ NEW COMPLAINT ══════════════ */
+function submitComplaint() {
+  const title=(document.getElementById('nc-title')?.value||'').trim();
+  if(!title){document.getElementById('nc-title').style.borderColor='var(--danger)';document.getElementById('nc-title').focus();return;}
+  const cat=document.getElementById('nc-cat')?.value;
+  const priority=document.getElementById('nc-pri')?.value;
+  const desc=document.getElementById('nc-desc')?.value||'';
+  const id='CMP-'+String(complaints.length+1).padStart(3,'0');
+  complaints.unshift({id,title,cat,status:'open',priority,date:new Date().toISOString().split('T')[0],desc,agent:null,agentId:null,userId:'U1',msgs:[],feedback:null,files:[]});
+  navigate('my-complaints');
+}
+
+async function getAISuggestion() {
+  const title=(document.getElementById('nc-title')?.value||'').trim();
+  const desc=(document.getElementById('nc-desc')?.value||'').trim();
+  const cat=document.getElementById('nc-cat')?.value;
+  if(!title&&!desc){document.getElementById('ai-out').innerHTML='<div class="ai-box"><div class="ai-label"><i class="ti ti-sparkles"></i> AI assistant</div>Please fill in the title and description first.</div>';return;}
+  document.getElementById('ai-out').innerHTML='<div class="ai-box"><div class="ai-label"><i class="ti ti-sparkles"></i> AI assistant</div><em>Analyzing your complaint and routing it to the right department…</em></div>';
+  try {
+    const resp=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:220,messages:[{role:'user',content:`A citizen is filing a complaint with these details:\nTitle: "${title}"\nCategory: ${cat}\nDescription: "${desc||'Not provided'}"\n\nIn exactly 3 short sentences respond: 1) Which department should handle this and why. 2) Recommended priority level (Low/Medium/High) with brief reason. 3) One actionable tip to speed up resolution. Be concise and practical.`}]})});
+    const data=await resp.json();
+    const text=data.content?.[0]?.text||'Suggestion unavailable.';
+    document.getElementById('ai-out').innerHTML=`<div class="ai-box"><div class="ai-label"><i class="ti ti-sparkles"></i> AI routing suggestion</div>${text}</div>`;
+  } catch(e) {
+    document.getElementById('ai-out').innerHTML=`<div class="ai-box"><div class="ai-label"><i class="ti ti-sparkles"></i> AI assistant</div>Based on the category "${cat}", this complaint should be routed to the municipal ${cat} department. Recommended priority: Medium. Tip: Attach clear photos with date and GPS location to speed up field assessment.</div>`;
+  }
+}
+
+/* ══════════════ UTILS ══════════════ */
+function applyFilter(f) { filterStatus=f; renderContent(); }
+function doSearch(q) {
+  const list=document.getElementById('comp-list');if(!list)return;
+  const filtered=complaints.filter(c=>!q||c.title.toLowerCase().includes(q.toLowerCase())||c.id.toLowerCase().includes(q.toLowerCase())||c.cat.toLowerCase().includes(q.toLowerCase())||(c.agent||'').toLowerCase().includes(q.toLowerCase()));
+  list.innerHTML=filtered.length?complaintsTable(filtered,ROLE==='admin'):`<div class="empty-state"><i class="ti ti-search-off"></i><p>No complaints match "${q}".</p></div>`;
+  list.querySelectorAll('[data-cid]').forEach(r=>r.addEventListener('click',()=>openModal(r.dataset.cid)));
+}
+function toggleSwitch(id) { document.getElementById(id).classList.toggle('on'); }
+function statusLabel(s) { return {open:'Open',progress:'In Progress',resolved:'Resolved',closed:'Closed'}[s]||s; }
+function cap(s) { return s.charAt(0).toUpperCase()+s.slice(1); }
+</script>
+</body>
+</html>
